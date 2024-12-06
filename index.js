@@ -8,7 +8,10 @@ const nodemailer = require('nodemailer');
 const client = new MongoClient(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+  tls: true, // Habilitar TLS/SSL
+  tlsAllowInvalidCertificates: true, // Permitir certificados no válidos (si es necesario)
 });
+
 
 let db;
 client.connect()

@@ -1,5 +1,9 @@
 require('dotenv').config(); // Cargar las variables de entorno
 const fastify = require('fastify')();
+const fastifyCors = require('@fastify/cors');
+fastify.register(fastifyCors, {
+  origin: '*',  // Permite solicitudes desde cualquier origen, si es necesario.
+});
 const formbody = require('@fastify/formbody');
 const { MongoClient } = require('mongodb'); // Importar MongoDB
 const nodemailer = require('nodemailer');

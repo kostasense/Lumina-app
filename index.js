@@ -1,6 +1,7 @@
 require('dotenv').config(); // Cargar las variables de entorno
 const fastify = require('fastify')();
 const fastifyCors = require('@fastify/cors');
+const fastifyJWT = require('fastify-jwt'); // Importar fastify-jwt
 fastify.register(fastifyCors, {
   origin: '*',  // Permite solicitudes desde cualquier origen, si es necesario.
 });
@@ -15,7 +16,6 @@ const client = new MongoClient(process.env.MONGO_URI, {
   tls: true, // Habilitar TLS/SSL
   tlsAllowInvalidCertificates: true, // Permitir certificados no válidos (si es necesario)
 });
-
 
 let db;
 client.connect()
@@ -34,6 +34,33 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD,
   },
+});
+
+// Configurar Fastify para usar JWT
+fastify.register(fastifyJWT, {
+  secret: process.env.JWT_SECRET, // Usar la clave secreta del JWT desde las variables de entorno
+});
+
+// Middleware para verificar el JWT
+async function verifyJWT(request, reply) {
+  try {
+    await request.jwtVerify();
+  } catch (err) {
+    reply.status(401).send('No autorizado');
+  }
+}
+
+// Ruta de login para obtener el token JWT
+fastify.post('/login', async (request, reply) => {
+  const { username, password } = request.body;
+
+  // Verificar las credenciales (esto debe hacerse con seguridad, posiblemente contra una base de datos)
+  if (username === process.env.ADMIN_USER && password === process.env.ADMIN_PASSWORD) {
+    const token = fastify.jwt.sign({ username, role: 'admin' }); // Añadir rol como admin
+    reply.send({ token });
+  } else {
+    reply.status(401).send('Credenciales incorrectas');
+  }
 });
 
 // Ruta para recibir el registro
@@ -67,10 +94,8 @@ fastify.post('/register', async (request, reply) => {
   }
 });
 
-fastify.register(formbody);
-
-// Nueva ruta para enviar un correo a todos los suscriptores
-fastify.post('/send-email-to-subscribers', async (request, reply) => {
+// Ruta protegida para enviar un correo a todos los suscriptores
+fastify.post('/send-email-to-subscribers', { preHandler: verifyJWT }, async (request, reply) => {
   try {
     const collection = db.collection('suscriptores');
 

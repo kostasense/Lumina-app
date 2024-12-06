@@ -1,17 +1,16 @@
 {
-  "name": "glitch-hello-node",
-  "version": "0.1.0",
-  "description": "A simple Node app built on fastify, instantly up and running.",
-  "main": "server.js",
+  "name": "lumina-backend",
+  "version": "1.0.0",
+  "description": "Aplicación backend para Lumina utilizando Fastify y MongoDB.",
+  "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
     "@fastify/formbody": "^7.0.0",
-    "archiver": "^7.0.1",
     "dotenv": "^16.4.5",
     "fastify": "^4.15.0",
-    "mysql2": "^3.11.3",
+    "mongodb": "^5.7.0",
     "nodemailer": "^6.9.15"
   },
   "engines": {
@@ -23,6 +22,8 @@
   "license": "MIT",
   "keywords": [
     "node",
-    "railway"
+    "railway",
+    "mongodb",
+    "fastify"
   ]
 }

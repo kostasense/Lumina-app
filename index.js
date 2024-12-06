@@ -1,7 +1,7 @@
 require('dotenv').config(); // Cargar las variables de entorno
 const fastify = require('fastify')();
 const fastifyCors = require('@fastify/cors');
-const fastifyJWT = require('fastify-jwt'); // Importar fastify-jwt
+const fastifyJWT = require('@fastify/jwt'); // Importar fastify-jwt
 fastify.register(fastifyCors, {
   origin: '*',  // Permite solicitudes desde cualquier origen, si es necesario.
 });

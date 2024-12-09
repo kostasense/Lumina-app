@@ -2,17 +2,22 @@ require('dotenv').config(); // Cargar las variables de entorno
 const fastify = require('fastify')();
 const fastifyCors = require('@fastify/cors');
 
-const fastifyJWT = require('@fastify/jwt'); // Importar fastify-jwt
 fastify.register(fastifyCors, {
   origin: '*',  // Permite solicitudes desde cualquier origen, si es necesario.
 });
 
+const fastifyJWT = require('@fastify/jwt'); // Importar fastify-jwt
+
+// Configurar Fastify para usar JWT
+fastify.register(fastifyJWT, {
+  secret: process.env.JWT_SECRET, // Usar la clave secreta del JWT desde las variables de entorno
+});
+
 const formbody = require('@fastify/formbody');
+
 fastify.register(formbody);
 
 const { MongoClient } = require('mongodb'); // Importar MongoDB
-const nodemailer = require('nodemailer');
-
 // Configura MongoDB
 const client = new MongoClient(process.env.MONGO_URI, {
   useNewUrlParser: true,
@@ -31,6 +36,7 @@ client.connect()
     console.error('Error al conectar a MongoDB: ', error);
   });
 
+const nodemailer = require('nodemailer');
 // Configura Nodemailer
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -38,11 +44,6 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD,
   },
-});
-
-// Configurar Fastify para usar JWT
-fastify.register(fastifyJWT, {
-  secret: process.env.JWT_SECRET, // Usar la clave secreta del JWT desde las variables de entorno
 });
 
 // Middleware para verificar el JWT

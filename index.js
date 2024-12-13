@@ -1,20 +1,18 @@
 require('dotenv').config(); // Cargar las variables de entorno
 const fastify = require('fastify')();
-const fastifyCors = require('@fastify/cors');
 
+const fastifyCors = require('@fastify/cors');
 fastify.register(fastifyCors, {
   origin: '*',  // Permite solicitudes desde cualquier origen, si es necesario.
 });
 
 const fastifyJWT = require('@fastify/jwt'); // Importar fastify-jwt
-
 // Configurar Fastify para usar JWT
 fastify.register(fastifyJWT, {
   secret: process.env.JWT_SECRET, // Usar la clave secreta del JWT desde las variables de entorno
 });
 
 const formbody = require('@fastify/formbody');
-
 fastify.register(formbody);
 
 const { MongoClient } = require('mongodb'); // Importar MongoDB
@@ -58,7 +56,6 @@ async function verifyJWT(request, reply) {
 // Ruta de login para obtener el token JWT
 fastify.post('/login', async (request, reply) => {
   const { username, password } = request.body;
-
   // Verificar las credenciales (esto debe hacerse con seguridad, posiblemente contra una base de datos)
   if (username === process.env.ADMIN_USER && password === process.env.ADMIN_PASSWORD) {
     const token = fastify.jwt.sign({ username, role: 'admin' }); // Añadir rol como admin
@@ -71,16 +68,13 @@ fastify.post('/login', async (request, reply) => {
 // Ruta para recibir el registro
 fastify.post('/register', async (request, reply) => {
   const { email } = request.body;
-
   if (!email) {
     return reply.status(400).send('El correo electrónico es requerido.');
   }
-
   try {
     // Inserta el correo electrónico en la base de datos
     const collection = db.collection('suscriptores');
     await collection.insertOne({ email });
-
     // Envía un correo electrónico de bienvenida
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -88,9 +82,7 @@ fastify.post('/register', async (request, reply) => {
       subject: 'Bienvenido a Lumina',
       text: 'Gracias por registrarte en Lumina. ¡Estamos felices de tenerte con nosotros!',
     };
-
     await transporter.sendMail(mailOptions);
-
     // Redirige a la página deseada después de un registro exitoso
     reply.redirect('https://kostasense.github.io/Lumina/registro.html');
   } catch (error) {
@@ -103,14 +95,11 @@ fastify.post('/register', async (request, reply) => {
 fastify.post('/send-email-to-subscribers', { preHandler: verifyJWT }, async (request, reply) => {
   try {
     const collection = db.collection('suscriptores');
-
     // Obtener todos los correos electrónicos de los suscriptores
     const suscriptores = await collection.find().toArray();
-
     if (suscriptores.length === 0) {
       return reply.status(404).send('No hay suscriptores.');
     }
-
     // Definir las opciones del correo
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -120,13 +109,11 @@ fastify.post('/send-email-to-subscribers', { preHandler: verifyJWT }, async (req
       <img src="https://raw.githubusercontent.com/kostasense/Lumina/refs/heads/main/imagenes/gatoloco.jpg" alt="gatoloco"/>
       `,
     };
-
     // Enviar un correo a cada suscriptor
     for (const suscriptor of suscriptores) {
       mailOptions.to = suscriptor.email; // Asignar cada correo electrónico
       await transporter.sendMail(mailOptions);
     }
-
     reply.send('Correos electrónicos enviados a todos los suscriptores.');
   } catch (error) {
     console.error('Error al enviar correos a los suscriptores: ', error);
